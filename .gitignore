@@ -173,6 +173,10 @@ $RECYCLE.BIN/
 .cursor/
 .cursorrules
 
+# Local development notes (not committed)
+*.local.md
+.local/
+
 # Git hooks (managed by lefthook)
 .git/hooks/coverage/
 .git-backup-*
