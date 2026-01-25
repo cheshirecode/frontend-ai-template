@@ -1,0 +1,47 @@
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import { SWRProvider, JotaiProvider } from "@/components/providers";
+import ErrorBoundary from "@/components/common/ErrorBoundary";
+import { WebVitalsMonitor } from "@/components/common/PerformanceMonitor";
+import { SpeedInsights } from '@vercel/speed-insights/next';
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "AI Chat Template",
+  description: "A production-ready Next.js + AI template",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full w-full m-0 p-0`}
+        suppressHydrationWarning={true}
+      >
+        <ErrorBoundary>
+          <WebVitalsMonitor />
+          <JotaiProvider>
+            <SWRProvider>
+              {children}
+            </SWRProvider>
+          </JotaiProvider>
+          <SpeedInsights />
+        </ErrorBoundary>
+      </body>
+    </html>
+  );
+}
