@@ -10,6 +10,7 @@ import {
   Message
 } from '@/store'
 import { AIProvider } from '@/lib/ai-service'
+import { validateChatMessage } from '@/lib/utils/inputValidation'
 
 interface UseChatOptions {
   onError?: (error: Error) => void
@@ -38,19 +39,31 @@ export function useChat(
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim() || isLoading) return
 
-    // Add user message
-    addMessage({ role: 'user', content })
+    // Perform client-side validation before sending
+    const validation = validateChatMessage(content);
+    if (!validation.isValid) {
+      // Add an error message to the chat UI
+      const errorMsg = validation.error || 'Invalid message';
+      addMessage({
+        role: 'system',
+        content: `Validation Error: ${errorMsg}`
+      });
+      return; // Exit early if validation fails
+    }
 
-    setIsLoading(true)
+    // Add user message
+    addMessage({ role: 'user', content });
+
+    setIsLoading(true);
 
     try {
       if (isFastMode) {
         // Manual mode - simple echo response
-        await new Promise(resolve => setTimeout(resolve, 500))
+        await new Promise(resolve => setTimeout(resolve, 500));
         addMessage({
           role: 'assistant',
-          content: `[Manual Mode] You said: "${content}"`
-        })
+          content: `[Manual Mode] You said: "${content}"]`
+        });
       } else {
         // AI mode - call the API
         const response = await fetch('/api/ai', {
@@ -60,32 +73,52 @@ export function useChat(
             message: content,
             provider: aiProvider || 'gemini'
           })
-        })
+        });
 
         if (!response.ok) {
-          throw new Error(`API error: ${response.status}`)
+          throw new Error(`API error: ${response.status}`);
         }
 
-        const data = await response.json()
+        const data = await response.json();
         addMessage({
           role: 'assistant',
           content: data.response || 'No response received'
-        })
+        });
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      console.error('Chat error:', errorMessage)
+      let userFacingMessage = 'An unexpected error occurred.';
+      let logMessage = 'Unknown error';
+
+      if (error instanceof Error) {
+        logMessage = error.message;
+
+        // Interpret common API error statuses for user-friendliness
+        if (logMessage.includes('API error: 500')) {
+          userFacingMessage = 'The AI service encountered an error. Please try again.';
+        } else if (logMessage.includes('API error: 400')) {
+          userFacingMessage = 'Your message could not be processed. Please check your input.';
+        } else if (logMessage.includes('API error:')) {
+          // Generic API error message for other codes
+          userFacingMessage = 'Failed to communicate with the AI service. Please try again.';
+        } else {
+          // For other types of errors (e.g., network issues)
+          userFacingMessage = 'Failed to connect to the AI service. Please check your connection.';
+        }
+      }
+
+      console.error('Chat error details:', { originalError: error, userFacingMessage, logMessage });
 
       addMessage({
         role: 'system',
-        content: `Error: ${errorMessage}`
-      })
+        content: `Error: ${userFacingMessage}`
+      });
 
-      options.onError?.(error instanceof Error ? error : new Error(errorMessage))
+      // Pass the original error object to the onError callback if provided
+      options.onError?.(error instanceof Error ? error : new Error(logMessage));
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [isLoading, isFastMode, aiProvider, addMessage, setIsLoading, options])
+  }, [isLoading, isFastMode, aiProvider, addMessage, setIsLoading, options]);
 
   const clearChat = useCallback(() => {
     clearMessages()
