@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SWRProvider, JotaiProvider } from "@/components/providers";
+import { Providers } from "@/app/providers";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
 import { WebVitalsMonitor } from "@/components/common/PerformanceMonitor";
 import { SpeedInsights } from '@vercel/speed-insights/next';
@@ -36,7 +37,9 @@ export default function RootLayout({
           <WebVitalsMonitor />
           <JotaiProvider>
             <SWRProvider>
-              {children}
+              <Providers>
+                {children}
+              </Providers>
             </SWRProvider>
           </JotaiProvider>
           <SpeedInsights />
