@@ -24,9 +24,9 @@ export function ChatMessage({ message }: ChatMessageProps) {
       <div
         className={clsx(
           'max-w-[80%] rounded-lg px-4 py-2',
-          isUser && 'bg-blue-600 text-white',
-          !isUser && !isSystem && 'bg-gray-100 text-gray-900',
-          isSystem && 'bg-yellow-50 text-yellow-800 border border-yellow-200'
+          isUser && 'bg-blue-600 text-white dark:bg-blue-700',
+          !isUser && !isSystem && 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-100',
+          isSystem && 'bg-yellow-50 text-yellow-800 border border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-200 dark:border-yellow-800'
         )}
       >
         {/* Role indicator for non-user messages */}
