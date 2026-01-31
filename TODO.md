@@ -72,7 +72,7 @@ npm run dev
 ```
 
 ### Optional Enhancements
-- [ ] Add more unit tests for hooks and components
+- [ ] Add more unit tests for hooks and components (especially in mock mode for reliability)
 - [ ] Add visual regression tests
 - [ ] Add Storybook for component documentation
 - [ ] Add streaming response support in chat

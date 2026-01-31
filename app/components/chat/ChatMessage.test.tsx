@@ -1,3 +1,4 @@
+import React from 'react'
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { ChatMessage } from './ChatMessage'
@@ -10,9 +11,7 @@ describe('ChatMessage', () => {
       content: 'Hello, AI!',
       timestamp: Date.now()
     }
-
-    render(<ChatMessage message={message} />)
-
+    render(React.createElement(ChatMessage, { message }))
     expect(screen.getByText('Hello, AI!')).toBeInTheDocument()
   })
 
@@ -23,9 +22,7 @@ describe('ChatMessage', () => {
       content: 'Hello! How can I help you?',
       timestamp: Date.now()
     }
-
-    render(<ChatMessage message={message} />)
-
+    render(React.createElement(ChatMessage, { message }))
     expect(screen.getByText('Hello! How can I help you?')).toBeInTheDocument()
     expect(screen.getByText('AI')).toBeInTheDocument()
   })
@@ -37,9 +34,7 @@ describe('ChatMessage', () => {
       content: 'Connection established',
       timestamp: Date.now()
     }
-
-    render(<ChatMessage message={message} />)
-
+    render(React.createElement(ChatMessage, { message }))
     expect(screen.getByText('Connection established')).toBeInTheDocument()
     expect(screen.getByText('System')).toBeInTheDocument()
   })
@@ -52,9 +47,7 @@ describe('ChatMessage', () => {
       content: 'Test message',
       timestamp
     }
-
-    render(<ChatMessage message={message} />)
-
+    render(React.createElement(ChatMessage, { message }))
     const timeString = new Date(timestamp).toLocaleTimeString()
     expect(screen.getByText(timeString)).toBeInTheDocument()
   })

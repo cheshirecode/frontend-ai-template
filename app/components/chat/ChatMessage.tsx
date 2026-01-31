@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { Message } from '@/store'
 import clsx from 'clsx'
 
