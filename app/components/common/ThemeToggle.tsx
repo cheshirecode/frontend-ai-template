@@ -8,24 +8,34 @@ export function ThemeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme()
 
   const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark')
+    if (theme === 'system') {
+      // If currently using system preference, switch to either light or dark explicitly
+      setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
+    } else {
+      // Otherwise toggle between light/dark/system
+      setTheme(theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light')
+    }
   }
 
-  // Use resolvedTheme to determine the current effective theme
-  const isDark = resolvedTheme === 'dark'
+  const currentTheme = theme === 'system' ? resolvedTheme : theme
+  
+  const icon = currentTheme === 'dark' ? (
+    <SunIcon className="h-5 w-5" />
+  ) : (
+    <MoonIcon className="h-5 w-5" />
+  )
+
+  const label = currentTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
 
   return (
-    <Button
+    <Button 
+      variant="ghost" 
       onClick={toggleTheme}
-      variant="ghost"
-      size="icon"
-      aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+      aria-label={label}
+      title={label}
+      className="p-2"
     >
-      {isDark ? (
-        <SunIcon className="h-5 w-5" />
-      ) : (
-        <MoonIcon className="h-5 w-5" />
-      )}
+      {icon}
     </Button>
   )
 }

@@ -1,28 +1,67 @@
+import DOMPurify from 'isomorphic-dompurify';
+
+export interface ValidationResult {
+  isValid: boolean;
+  error?: string;
+  sanitizedValue?: string;
+}
+
 /**
- * Validates user input for chat messages.
- * @param message The user-provided message string.
- * @returns An object containing isValid (boolean) and optionally an error message.
+ * Validates and sanitizes a chat message
+ * @param message The message to validate
+ * @returns Validation result with sanitized value
  */
-export function validateChatMessage(message: string): { isValid: boolean; error?: string } {
-  // Check if message is empty or only whitespace after trimming
-  if (!message?.trim()) {
-    return { isValid: false, error: 'Message cannot be empty' };
+export function validateChatMessage(message: string): ValidationResult {
+  // Check if message is empty or only whitespace
+  if (!message || typeof message !== 'string' || message.trim().length === 0) {
+    return {
+      isValid: false,
+      error: 'Message cannot be empty',
+    };
   }
 
-  // Check message length (e.g., max 1000 characters)
-  const maxLength = 1000;
-  if (message.length > maxLength) {
-    return { isValid: false, error: `Message exceeds maximum length of ${maxLength} characters` };
+  // Check message length (prevent extremely long messages)
+  if (message.length > 2000) {
+    return {
+      isValid: false,
+      error: 'Message too long (max 2000 characters)',
+    };
   }
 
-  // Optional: Check for control characters (except common ones like \n, \t if needed)
-  // For now, let's allow standard printable ASCII and common whitespace
-  // Adjust the regex as needed based on requirements
-  const controlCharRegex = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/;
-  if (controlCharRegex.test(message)) {
-    return { isValid: false, error: 'Message contains invalid control characters' };
+  // Check for potentially harmful content (basic XSS prevention)
+  if (containsHarmfulContent(message)) {
+    return {
+      isValid: false,
+      error: 'Message contains invalid content',
+    };
   }
 
-  // If all checks pass
-  return { isValid: true };
+  // Sanitize the message to prevent XSS attacks
+  const sanitizedMessage = DOMPurify.sanitize(message, {
+    ALLOWED_TAGS: [], // No HTML tags allowed in chat messages
+    ALLOWED_ATTR: [], // No attributes allowed
+  });
+
+  return {
+    isValid: true,
+    sanitizedValue: sanitizedMessage,
+  };
+}
+
+/**
+ * Checks if the message contains potentially harmful content
+ * @param message The message to check
+ * @returns True if harmful content is detected
+ */
+function containsHarmfulContent(message: string): boolean {
+  const harmfulPatterns = [
+    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, // Script tags
+    /javascript:/gi, // JavaScript URLs
+    /on\w+\s*=/gi, // Event handlers (onclick, onload, etc.)
+    /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, // Iframe tags
+    /<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, // Object tags
+    /<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, // Embed tags
+  ];
+
+  return harmfulPatterns.some(pattern => pattern.test(message));
 }

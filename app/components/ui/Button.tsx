@@ -22,9 +22,9 @@ export function Button({
     // Primary variant
     'bg-blue-600 text-white hover:bg-blue-700': variant === 'primary',
     // Secondary variant
-    'bg-gray-200 text-gray-900 hover:bg-gray-300': variant === 'secondary',
+    'bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-600 dark:text-white dark:hover:bg-gray-700': variant === 'secondary',
     // Ghost variant
-    'text-gray-900 hover:bg-gray-100': variant === 'ghost',
+    'text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700': variant === 'ghost',
   });
   
   const sizeClasses = clsx({
